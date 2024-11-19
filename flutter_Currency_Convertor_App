@@ -1,0 +1,207 @@
+
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}): super(key:key);
+
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: Currency_convertor (title: 'Currency Convertor '),
+    );
+  }
+}
+// Main structure
+class Currency_convertor extends StatefulWidget {
+  final dynamic title;
+  const Currency_convertor({ Key? key, this.title}) :super(key: key);
+  @override
+  State<Currency_convertor> createState() => _Currency_convertorState();
+}
+//set states and UI elements
+
+class _Currency_convertorState extends State<Currency_convertor> {
+// Handle the input for the amount
+  final TextEditingController _controller = TextEditingController();
+  // select currency
+  String? _selectedCurrency;
+  // store result
+  String _result = "";
+  // Map containing conversion rates
+  final Map<String, double> _conversionRates = {
+    'USD': 0.0036,
+    'GBP': 0.0028,
+    'EUR': 0.0033,
+    'SAR': 0.0135,
+    'TRY': 0.097,
+  };
+
+  // Method for Conversion
+  void Currency_convertor() {
+    // check for valid input
+    if (_controller.text.isEmpty || _selectedCurrency == null) {
+      _showAlert('Please enter a valid amount and select a currency.');
+      return;
+    }
+    // check for valid amount
+    final Amount = double.tryParse(_controller.text);
+    if (Amount == null) {
+      _showAlert('Invalid numeric input. Please enter a valid amount.');
+      return;
+    }
+    final rate = _conversionRates[_selectedCurrency]!;
+    final convertedAmount = Amount * rate;
+
+    setState(() {
+      _result = "Converted Amount: ${_getCurrencySymbol(
+          _selectedCurrency!)}${convertedAmount.toStringAsFixed(2)}";
+    });
+  }
+
+
+// method for setAlert message
+  void _showAlert(String s) {
+    showDialog(
+      context: context,
+      builder: (context) =>
+          AlertDialog(
+            title: Text('Error'),
+            content: Text(s),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('ok'))
+            ],
+          ),
+    );
+  }
+// Method for clear the field
+  void _clearFields() {
+      setState(() {
+        _controller.clear();
+        _selectedCurrency = null;
+        _result = "";
+    });
+  }
+  String _getCurrencySymbol(String currency) {
+    switch (currency) {
+      case 'USD':
+        return '\$';
+      case 'GBP':
+        return '£';
+      case 'EUR':
+        return '€';
+      case 'SAR':
+        return '﷼';
+      case 'TRY':
+        return '₺';
+      default:
+        return '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      // set the app bar
+      appBar: AppBar(
+        title: Text("Currency convertor app "),
+        backgroundColor: Colors.purple,),
+
+      body: Padding(
+        padding: const
+        EdgeInsets.all(15.0),
+        // text field for input
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center ,
+            children: [
+              TextField(
+                controller: _controller,
+                decoration:
+                const InputDecoration(label: Text('Enter value in Pkr')),
+                keyboardType: TextInputType.number,),
+               SizedBox(height: 18),
+            // set dropdown button list of currency
+              DropdownButton<String>(
+                isExpanded: true,
+                value: _selectedCurrency,
+                hint: Text('Select Currency '),
+                items:  _conversionRates.keys.map((currency) {
+                  return DropdownMenuItem(
+                    value: currency,
+                    child: Row(
+                      children: [
+                        _getCurrencyIcon(currency),
+                        SizedBox(width: 10),
+                        Text(currency),
+                      ],
+                    ),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCurrency = value;
+                  });
+                },
+              ),
+        SizedBox(height: 16,),
+        // Elevated button of convert
+        Row(
+            children: [
+              ElevatedButton(
+                onPressed: () =>Currency_convertor(),
+                child: Text('Convert'),
+                    ),
+               SizedBox(width: 15,),
+              // Elevated button of clear
+              ElevatedButton(
+                  onPressed: _clearFields,
+                  child: Text('clear')
+              ),
+    ]
+        ),
+      SizedBox(height:30),
+
+      // Text widget for Output
+        Text(
+          _result==null?
+         'Result show here  ':'$_result',
+
+          //manage font sytle
+          style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.normal,
+              color: Colors.purple),
+
+        ),
+        ]
+      ),
+    )
+    );
+  }
+  Widget _getCurrencyIcon(String currency) {
+    switch (currency) {
+      case 'USD':
+        return Icon(Icons.attach_money, color: Colors.red);
+      case 'GBP':
+        return Icon(Icons.euro, color: Colors.pink);
+      case 'EUR':
+        return Icon(Icons.euro, color: Colors.green);
+      case 'SAR':
+        return Icon(Icons.money, color: Colors.purple);
+      case 'TRY':
+        return Icon(Icons.account_balance_wallet, color: Colors.orange);
+      default:
+        return Icon(Icons.money);
+    }
+  }
+}
